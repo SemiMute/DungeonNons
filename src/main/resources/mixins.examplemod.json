@@ -1,0 +1,8 @@
+{
+    "compatibilityLevel": "JAVA_8",
+    "package": "me.semimute.dungeonnons.mixins",
+    "client": [
+        "MixinMinecraft"
+    ],
+    "verbose": true
+}
