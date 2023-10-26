@@ -26,6 +26,14 @@ object Config : Vigilant(File(Main.configLocation)) {
     var guildChatBridgeBotName = "WeebchanBot"
 
     @Property(
+             type = PropertyType.SWITCH,
+             name = "Rat",
+             description = "The rat appears when he is called!",
+             category = "Guild"
+    )
+    var ratEnabled = true
+
+    @Property(
             type = PropertyType.SWITCH,
             name = "Party Commands",
             description = "Allows party members to use commands to speed things up",
