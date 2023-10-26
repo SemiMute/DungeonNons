@@ -1,8 +1,8 @@
 [
     {
-        "modid": "examplemod",
-        "name": "ExampleMod",
-        "description": "Template Mod",
+        "modid": "dungeonnons",
+        "name": "DungeonNons",
+        "description": "QOL Skyblock Mod",
         "version": "${version}",
         "mcversion": "${mcversion}",
         "url": "",
