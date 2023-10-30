@@ -4,6 +4,7 @@ import com.google.gson.*
 import me.semimute.dungeonnons.commands.ConfigCommand
 import me.semimute.dungeonnons.core.Config
 import me.semimute.dungeonnons.events.ChatReceivedListener
+import me.semimute.dungeonnons.events.NameChanger
 import me.semimute.dungeonnons.events.Rat
 import me.semimute.dungeonnons.events.packet.PacketListener
 import me.semimute.dungeonnons.util.Utils
@@ -47,6 +48,7 @@ open class Main {
         MinecraftForge.EVENT_BUS.register(ChatReceivedListener())
         MinecraftForge.EVENT_BUS.register(Rat())
         MinecraftForge.EVENT_BUS.register(PacketListener())
+        MinecraftForge.EVENT_BUS.register(NameChanger())
 
     }
 }

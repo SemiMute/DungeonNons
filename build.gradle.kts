@@ -2,6 +2,7 @@ import dev.architectury.pack200.java.Pack200Adapter
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization") version "1.9.10"
     id("gg.essential.loom")
     id("io.github.juuxel.loom-quiltflower")
     id("dev.architectury.architectury-pack200")
@@ -44,6 +45,8 @@ dependencies {
 
     compileOnly("org.spongepowered:mixin:0.8.5-SNAPSHOT")
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
 repositories {
