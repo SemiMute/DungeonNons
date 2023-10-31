@@ -57,6 +57,30 @@ object Config : Vigilant(File(Main.configLocation)) {
     )
     var cmdSummon = true
 
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Rat Interjections",
+            description = "When a rat is mentioned, your personal rat will interject!",
+            category = "Fun"
+    )
+    var doRatInterjection = true
+
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Custom Names",
+            description = "Parse SemiMute's Custom Names",
+            category = "Fun"
+    )
+    var doCustomNames = true
+
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Developer Mode",
+            description = "Enables experimental or half baked changes. MAY BE UNSTABLE",
+            category = "Fun"
+    )
+    var developerMode = false
+
     init {
         addDependency("guildChatBridgeBotName", "doBridgeBotFormatting")
         addDependency("partyCommandPrefix", "doPartyCommands")
