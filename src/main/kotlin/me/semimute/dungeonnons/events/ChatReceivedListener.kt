@@ -18,6 +18,37 @@ data class NamesType(
 )
 
 class ChatReceivedListener {
+
+    fun fuckyou(inc: String): HashMap<String, String> {
+        var mid = inc.removePrefix("{")
+        mid = mid.removeSuffix("}")
+        val midL = mid.split(',')
+        val entries = midL.count()
+        var i = 0
+        var outg: HashMap<String, String> = hashMapOf<String, String>();
+        while (i < entries) {
+            val it = midL[i].split('=')
+            outg.set(it[0], it[1])
+            i++
+        }
+        return outg;
+    }
+
+
+
+    private val names =
+                "{\n" +
+                "  \"NAMES\": {\n" +
+                "    \"Petsai\": \"&d[WEEB] Petsai\",\n" +
+                "    \"Yanzinator\": \"&a[&8Real Dev&a] Yanzinator\"\n" +
+                "  }\n" +
+                "}"
+        //       URL("https://gist.githubusercontent.com/SemiMute/dfb8b04e889ddffdd47291061e362f46/raw/").readText();
+
+    private val nameObj = Json.decodeFromString<NamesType>(names);
+
+    private val nameMap = fuckyou(nameObj.NAMES.toString());
+
     @SubscribeEvent
     fun onChatReceived(event: ClientChatReceivedEvent){
         var replaceChat = false;
@@ -63,49 +94,32 @@ class ChatReceivedListener {
                 }
             }
         }
-        if(Config.doCustomNames){
+        if(Config.doCustomNames) {
             println("DETECTED CUSTOM NAME ATTEMPT")
-            fun fuckyou(inc: String): HashMap<String, String> {
-                var mid = inc.removePrefix("{")
-                mid = mid.removeSuffix("}")
-                val midL = mid.split(',')
-                val entries = midL.count()
-                var i = 0
-                var outg: HashMap<String, String> = hashMapOf<String, String>();
-                while (i < entries) {
-                    val it = midL[i].split('=')
-                    outg.set(it[0], it[1])
-                    i++
-                }
-                return outg;
-            }
-            val message = newText;
-            val Names = URL("https://gist.githubusercontent.com/SemiMute/dfb8b04e889ddffdd47291061e362f46/raw/").readText();
+            var newMessage = newText;
 
-            val nameObj = Json.decodeFromString<NamesType>(Names);
-
-            val nameMap = fuckyou(nameObj.NAMES.toString());
-
-            var newMessage = message;
             nameMap.forEach {
 
                 if (newMessage.contains(it.key.trim())) {
                     println("DETECTED CUSTOM NAME ATTEMPT" + "1111")
-                    val lastColorCheckString = newMessage.split(it.key)[0];
-                    val colorMatch = "&[0-9a-fk-or]".toRegex().findAll(lastColorCheckString);
+                    val splitMessage = newMessage.split(it.key.trim());
+                    if(splitMessage[0].trim().last() == ']') {
+                        val rankFind = "\\[[^\\]]*\\] ".toRegex().findAll(splitMessage[0]);
+                        val rankVal = rankFind.lastOrNull();
+                        if(rankVal != null){
+                            newMessage = newMessage.removeRange(rankVal.range);
+                        }
+                    }
+                    val colorMatch = "[§&][0-9a-fk-or]".toRegex().findAll(splitMessage[0]);
                     val lastColorMatch = colorMatch.lastOrNull();
-                    val color: String;
-                    if (lastColorMatch != null){
-                        color = lastColorMatch.value;
-                    }
-                    else {
-                        color = "&r"
-                    }
+                    val color = lastColorMatch?.value ?: "&r"
+
                     newMessage = newMessage.replace(it.key.trim(), it.value.trim() + color)
                     replaceChat = true;
-                }
+                    }
             }
-            newText = newMessage;
+                newText = newMessage;
+                println("text colorcoded")
         }
         if(replaceChat){
             event.isCanceled = true;
