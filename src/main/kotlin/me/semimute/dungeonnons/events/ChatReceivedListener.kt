@@ -18,13 +18,38 @@ data class NamesType(
 )
 
 class ChatReceivedListener {
+
+    fun fuckyou(inc: String): HashMap<String, String> {
+        var mid = inc.removePrefix("{")
+        mid = mid.removeSuffix("}")
+        val midL = mid.split(',')
+        val entries = midL.count()
+        var i = 0
+        var outg: HashMap<String, String> = hashMapOf<String, String>();
+        while (i < entries) {
+            val it = midL[i].split('=')
+            outg.set(it[0], it[1])
+            i++
+        }
+        return outg;
+    }
+
+
+    private val names =
+        URL("https://gist.githubusercontent.com/SemiMute/dfb8b04e889ddffdd47291061e362f46/raw/").readText();
+
+    private val nameObj = Json.decodeFromString<NamesType>(names);
+
+    private val nameMap = fuckyou(nameObj.NAMES.toString());
+
     @SubscribeEvent
-    fun onChatReceived(event: ClientChatReceivedEvent){
+    fun onChatReceived(event: ClientChatReceivedEvent) {
         var replaceChat = false;
         var newText = event.message.unformattedText;
-        if(Config.doBridgeBotFormatting){
+        var formattedText = event.message.formattedText.toString();
+        if (Config.doBridgeBotFormatting) {
             var message = newText;
-            if(message.startsWith("§2Guild >") && message.contains(Config.guildChatBridgeBotName)){
+            if (message.startsWith("§2Guild >") && message.contains(Config.guildChatBridgeBotName)) {
                 event.isCanceled = true;
                 var messageSplit = message.split(" ");
                 println(messageSplit);
@@ -32,84 +57,74 @@ class ChatReceivedListener {
                 var username = messageSplit[0].replace("<", "").replace(">", "").replace(";", " ")
                 println(username);
                 messageSplit = messageSplit.drop(1);
-                newText = "&dDiscord > &5$username&f: ${messageSplit.joinToString(" ")}";
+                newText = "§dDiscord > §5$username§f: ${messageSplit.joinToString(" ")}";
             }
-            if(message.startsWith("§9Party §8>") && Config.doPartyCommands){
+            if (message.startsWith("§9Party §8>") && Config.doPartyCommands && message.contains(Config.partyCommandPrefix)) {
                 var messageSplit = message.split(" ");
                 println(messageSplit)
                 messageSplit = messageSplit.drop(1).drop(1);
-                if(messageSplit[0].contains("[")) messageSplit = messageSplit.drop(1); // removes rank if they have one
+                if (messageSplit[0].contains("[")) messageSplit = messageSplit.drop(1); // removes rank if they have one
                 var username = messageSplit[0].replace(":", "").replace("§f", "");
                 println(username)
                 messageSplit = messageSplit.drop(1);
                 var command = messageSplit[0].lowercase()
-                if(!command.startsWith(Config.partyCommandPrefix)) return;
+                if (!command.startsWith(Config.partyCommandPrefix)) return;
                 command = command.replace(Config.partyCommandPrefix, "")
 
                 // run command Logic
-                when(command){
+                when (command) {
                     "lme" -> {
-                        if(!Config.cmdLeaderMe) return;
-                        if(Minecraft.getMinecraft().thePlayer.name == username) return;
-                        Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(Utils.formatText(Main.prefix + "&cTransfered party to " + username)))
+                        if (!Config.cmdLeaderMe) return;
+                        if (Minecraft.getMinecraft().thePlayer.name == username) return;
+                        Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(Utils.formatText(Main.prefix + "§cTransfered party to " + username)))
                         Minecraft.getMinecraft().thePlayer.sendChatMessage("/p transfer $username")
                     }
+
                     "summon" -> {
-                        if(!Config.cmdSummon) return;
-                        if(Minecraft.getMinecraft().thePlayer.name == username) return;
-                        Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(Utils.formatText(Main.prefix + "&cSummoned Party due to request")))
+                        if (!Config.cmdSummon) return;
+                        if (Minecraft.getMinecraft().thePlayer.name == username) return;
+                        Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(Utils.formatText(Main.prefix + "§cSummoned Party due to request")))
                         Minecraft.getMinecraft().thePlayer.sendChatMessage("/p warp")
                     }
                 }
             }
         }
-        if(Config.doCustomNames){
-            println("DETECTED CUSTOM NAME ATTEMPT")
-            fun fuckyou(inc: String): HashMap<String, String> {
-                var mid = inc.removePrefix("{")
-                mid = mid.removeSuffix("}")
-                val midL = mid.split(',')
-                val entries = midL.count()
-                var i = 0
-                var outg: HashMap<String, String> = hashMapOf<String, String>();
-                while (i < entries) {
-                    val it = midL[i].split('=')
-                    outg.set(it[0], it[1])
-                    i++
-                }
-                return outg;
-            }
-            val message = newText;
-            val Names = URL("https://gist.githubusercontent.com/SemiMute/dfb8b04e889ddffdd47291061e362f46/raw/").readText();
+        if (Config.doCustomNames) {
+            var newMessage = formattedText;
 
-            val nameObj = Json.decodeFromString<NamesType>(Names);
-
-            val nameMap = fuckyou(nameObj.NAMES.toString());
-
-            var newMessage = message;
             nameMap.forEach {
 
                 if (newMessage.contains(it.key.trim())) {
                     println("DETECTED CUSTOM NAME ATTEMPT" + "1111")
-                    val lastColorCheckString = newMessage.split(it.key)[0];
-                    val colorMatch = "&[0-9a-fk-or]".toRegex().findAll(lastColorCheckString);
-                    val lastColorMatch = colorMatch.lastOrNull();
-                    val color: String;
-                    if (lastColorMatch != null){
-                        color = lastColorMatch.value;
+                    var splitMessage = newMessage.split(it.key.trim());
+                    if (splitMessage[0].trim().last() == ']') {
+                        val rankFind = "\\[[^\\]]*\\] ".toRegex().findAll(splitMessage[0]);
+                        val rankVal = rankFind.lastOrNull();
+                        if (rankVal != null) {
+                            newMessage = newMessage.removeRange(rankVal.range);
+                        }
                     }
-                    else {
-                        color = "&r"
+                    val prevIt = it;
+                    splitMessage = newMessage.split(it.key.trim());
+                    var endMessage = "";
+                    splitMessage.forEachIndexed { index, it ->
+                        val colorMatch = "[§&][0-9a-fk-or]".toRegex().findAll(it);
+                        val lastColorMatch = colorMatch.lastOrNull();
+                        val color = lastColorMatch?.value ?: "§r"
+                        endMessage += if (index < splitMessage.size - 1) {
+                            it + prevIt.value.trim() + color
+                        } else { it }
+                        replaceChat = true;
                     }
-                    newMessage = newMessage.replace(it.key.trim(), it.value.trim() + color)
-                    replaceChat = true;
+                    newMessage = endMessage
                 }
+                newText = newMessage;
+                println("text colorcoded")
             }
-            newText = newMessage;
-        }
-        if(replaceChat){
-            event.isCanceled = true;
-            Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(Utils.formatText(newText)))
+            if (replaceChat) {
+                event.isCanceled = true;
+                Minecraft.getMinecraft().thePlayer.addChatMessage(ChatComponentText(newText))
+            }
         }
     }
 }
